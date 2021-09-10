@@ -1,0 +1,15 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-openjdk:11-jdk
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN install_packages gcc python3-dev git vim openssh-client wget && wget https://bootstrap.pypa.io/get-pip.py && \
+    python3 get-pip.py && pip install setuptools
+
+# Add the user anvil UID:1000, GID:1000, home at /usr/src/app, install the anvil-app-server and allow non-root
+# users to bind "priviledged" ports
+RUN groupadd -r anvil -g 1000 && useradd -u 1000 -r -g anvil -m -d /usr/src/app -s /bin/bash -c "Anvil user" anvil && \
+    chmod 755 /usr/src/app && chown -R anvil:anvil /usr/src/app && pip install anvil-app-server && \
+    python3 -c "from anvil_app_server import *; find_or_download_app_server()" && \
+    echo 'net.ipv4.ip_unprivileged_port_start=0' > /etc/sysctl.d/50-unprivileged-ports.conf
