@@ -6,44 +6,20 @@ This image provides a basic [anvil] server for a [Raspberry Pi].
 
 ## Build Instructions
 
-1. Build the docker image on the RPi at the given IP address
+1. Build the docker image using [buildx and QEMU emulation](https://medium.com/@artur.klauser/building-multi-architecture-docker-images-with-buildx-27d80f7e2408):
 
 ```sh
->balena build -a balena-anvil -h 192.168.0.114 -p 2375 .
+> npx dockerfile-template -d BALENA_MACHINE_NAME=raspberrypi4-64 -f Dockerfile.template > Dockerfile.raspberrypi4-64 && \
+  docker buildx build . --pull --build-arg BALENA_ARCH=aarch64 --platform=linux/arm64 --file Dockerfile.raspberrypi4-64 \
+    --tag ryanfobel/raspberrypi4-64-anvil --load && rm Dockerfile.raspberrypi4-64
 ```
 
-2. List the images on the Pi
-
+2. Push the image to docker hub
 ```sh
->ssh root@192.168.0.114 -p 22222 balena-engine image ls
-
-REPOSITORY                                                       TAG                      IMAGE ID            CREATED             SIZE
-balena-anvil_main                                                latest                   67ad19d687a5        2 minutes ago       1.1GB
+> docker push ryanfobel/raspberrypi4-64-anvil
 ```
 
-3. Save the docker image `balena-anvil_main` on the pi and stream/import it into the docker service running on the laptop/desktop.
-
-```sh
->ssh root@192.168.0.114 -p 22222 balena-engine save balena-anvil_main | docker load
-
->docker image ls
-REPOSITORY                        TAG       IMAGE ID       CREATED       SIZE
-balena-anvil_main                 latest    0e4e4314354f   2 hours ago   1.62GB
-```
-
-4. Tag the image with the proper username/image name for docker hub.
-```sh
->docker tag balena-anvil_main ryanfobel/raspberrypi4-64-anvil
->docker image ls
-REPOSITORY                        TAG       IMAGE ID       CREATED       SIZE
-ryanfobel/raspberrypi4-64-anvil   latest    0e4e4314354f   2 hours ago   1.62GB
-balena-anvil_main                 latest    0e4e4314354f   2 hours ago   1.62GB
-```
-
-5. Push the image to docker hub
-```sh
->docker push ryanfobel/raspberrypi4-64-anvil
-```
+**Note:** these steps are performed automatically every time a commit or tag is pushed to this repository via a [GitHub Action](https://github.com/ryanfobel/balena-anvil/blob/main/.github/workflows/main.yml).
 
 ## Use this as a base image for your own balena `Dockerfile`
 
