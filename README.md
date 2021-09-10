@@ -1,3 +1,5 @@
+[![build-image](https://github.com/ryanfobel/balena-anvil/actions/workflows/main.yml/badge.svg)](https://github.com/ryanfobel/balena-anvil/actions/workflows/main.yml)
+
 # balena-anvil
 
 This image provides a basic [anvil] server for a [Raspberry Pi].
